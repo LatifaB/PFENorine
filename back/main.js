@@ -15,7 +15,7 @@
   .charge(-400)
   .linkDistance(function(d) { return radius(d.source.size) + radius(d.target.size) + 20; });
 
-  d3.json("graph.json", function(error, graph) {
+  d3.json("../res/graph.json", function(error, graph) {
   if (error) throw error;
 
   force
