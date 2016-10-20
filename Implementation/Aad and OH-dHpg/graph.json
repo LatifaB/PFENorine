@@ -1,0 +1,62 @@
+{
+  "items": [
+	{"id": 1, "size": 11, "color": "#2B00FF"},
+    {"id": 2, "size": 13, "color": "#FF0033"}
+  ],
+  "nodes": [
+    {"atom": "O", "size": 12},
+    {"atom": "O", "size": 12},
+    {"atom": "C", "size": 12},
+    {"atom": "C", "size": 12},
+    {"atom": "C", "size": 12},
+    {"atom": "C", "size": 12},
+    {"atom": "C", "size": 12},
+    {"atom": "N", "size": 12},
+    {"atom": "C", "size": 12},
+    {"atom": "O", "size": 12},
+	{"atom": "O", "size": 12},
+	
+	{"atom": "C", "size": 12},
+    {"atom": "C", "size": 12},
+    {"atom": "C", "size": 12},
+    {"atom": "O", "size": 12},
+    {"atom": "C", "size": 12},
+    {"atom": "C", "size": 12},
+    {"atom": "C", "size": 12},
+    {"atom": "C", "size": 12},
+    {"atom": "C", "size": 12},
+    {"atom": "O", "size": 12},
+    {"atom": "O", "size": 12},
+	{"atom": "N", "size": 12},
+    {"atom": "O", "size": 12}	
+  ],
+  "links": [
+    {"source": 0, "target": 2,  "bond": 2},
+    {"source": 1, "target": 2,  "bond": 1},
+    {"source": 2, "target": 3,  "bond": 1},
+    {"source": 3, "target": 4,  "bond": 1},
+    {"source": 4, "target": 5,  "bond": 1},
+    {"source": 5, "target": 6,  "bond": 1},
+    {"source": 6, "target": 7, "bond": 1},
+    {"source": 6, "target": 8, "bond": 2},
+    {"source": 8, "target": 9,  "bond": 1},
+    {"source": 8, "target": 10,  "bond": 2},
+	
+	{"source": 11, "target": 12,  "bond": 2},
+    {"source": 12, "target": 13,  "bond": 1},
+    {"source": 13, "target": 14,  "bond": 2},
+    {"source": 13, "target": 15,  "bond": 1},
+    {"source": 15, "target": 16,  "bond": 2},
+    {"source": 16, "target": 17,  "bond": 1},
+    {"source": 17, "target": 11, "bond": 1},
+    {"source": 17, "target": 18, "bond": 2},
+    {"source": 18, "target": 19,  "bond": 1},
+    {"source": 19, "target": 20,  "bond": 2},
+	{"source": 19, "target": 21,  "bond": 1},
+	{"source": 18, "target": 22,  "bond": 1},
+	{"source": 22, "target": 23,  "bond": 1}
+  ],
+  "extraLinks": [
+	{"type": "extraLink", "source": 0, "target": 12,  "bond": 1}
+  ]
+}

@@ -1,0 +1,23 @@
+Algorithme parcours du SMILE (fonction récursive) :
+
+atomes = Array()
+bonds = Array()
+
+
+Si "C,N,O.." alors ajouter au tableau des atomes (nodes)
+
+ Si suivant "C,N,O.." alors créer lien de taille 1 entre atomes d'indice i et i-1 et l'ajouter au tableau bonds
+
+ Sinon si suivant "=" alors  créer lien de taille 1 entre atomes d'indice i et i-1 et l'ajouter au tableau bonds
+
+ Sinon si "(" alors refaire les differentes étapes jusqu'à fermeture de la parenthèse (recursif)
+
+
+
+
+Le but de cet algorithme est de generer un tableau json en entrant simplement une formule SMILE. Ainsi on aura une conversion
+direct entre SMILE et json. On pourrait meme créer une autre fonction inverse qui permettrait de passer de json à SMILE.
+
+Comme cela chaque bouton de notre interface aura comme valeur le SMILE du bouton correspondant (exemple Aad), on recupere
+le SMILE du bouton et avec notre algorithme on vient créer le json du SMILE pour pouvoir le representer. Ainsi on ne
+sera pas obligé de stocker tout les fichiers json des monomers. 
