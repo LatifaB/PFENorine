@@ -1,17 +1,35 @@
-  var xhr = new XMLHttpRequest();
 
-  xhr.open('GET', 'http://bioinfo.lifl.fr/norine/rest/monomers/flat/json');
+//alert("debut");
 
 
-  xhr.addEventListener('readystatechange', function() {
+/*var xhr = new XMLHttpRequest();
 
-      if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
 
-          //var response = JSON.parse(xhr.responseText);
-          //document.getElementById('fileContent').innerHTML = '<span>' + xhr.responseText + '</span>';
-          alert(xhr.responseText);
-      }
-alert(xhr.responseText);
-  });
+xhr.onreadystatechange = function() {
+    if (xhr.readyState == 4 && (xhr.status == 200 || xhr.status == 0)) {
+        var nodes = xhr.responseXML.getElementsByTagName("smiles");
+	      var ol = document.createElement("ol"), li, cn;
+	      for (var i=0, c=nodes.length; i<c; i++) {
+		          li = document.createElement("li");
+		          cn = document.createTextNode(nodes[i].value);
+              console.log(node[i]);
+              li.appendChild(cn);
+              ol.appendChild(li);
+        }
 
-  xhr.send(null);
+	      document.getElementById("output").appendChild(ol);
+    }
+};
+
+
+xhr.open('GET', 'http://bioinfo.lifl.fr/norine/rest/monomers/flat/xml', true);
+
+xhr.send(null);
+*/
+
+var req = new XMLHttpRequest();
+req.open('GET', 'http://bioinfo.lifl.fr/norine/rest/id/json/00123', false);
+req.withCredentials = true;
+req.send(null);
+
+//alert("fin");
