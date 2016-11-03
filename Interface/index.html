@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.link line {
+  stroke: #696969;
+}
+
+.link line.separator {
+  stroke: #fff;
+  stroke-width: 2px;
+}
+
+.node circle {
+  stroke: #000;
+  stroke-width: 1.5px;
+}
+
+.node text {
+  font: 10px sans-serif;
+  pointer-events: none;
+}
+
+</style>
+<body>
+<button type="button" onclick="aad()">Aad</button>
+<button type="button" onclick="oHdHpg()">OH-dHpg</button>
+<script src="../js/d3.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+<script>
+
+var width = 960,
+    height = 500;
+
+var color = d3.scale.category20();
+
+var colors = {'C':'#ffffff' , 'N':'#4771A1' , 'O':'#D33E3E'} ;
+
+var radius = d3.scale.sqrt()
+    .range([0, 6]);
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+	
+svg.append("rect")
+    .attr("width", "100%")
+    .attr("height", "100%")
+    .attr("fill", "#CCCCCC");
+
+
+var force = d3.layout.force()
+    .size([width, height])
+    .charge(-400)
+    .linkDistance(function(d) { return radius(d.source.size) + radius(d.target.size) + 20; });
+
+var jsonArray = [];
+var jsonDraw = 0;
+var jsonDraw2 = 0;
+var i = 0;
+var l = 0;
+var nClick = 0;
+var elemOne = 0;
+var elemTwo = 0;
+
+function aad(){
+	$.getJSON("graph.json", function(data) {
+		// data is a JavaScript object now. Handle it as such
+		var jsonAad = data;
+		jsonArray[i] = jsonAad;
+
+		if(jsonDraw==0){
+			jsonDraw = data;
+			jsonDraw2 = JSON.parse(JSON.stringify(data));;
+		}else{
+			var obj = data;
+			for(var j=0; j<obj.links.length; j++){
+				obj.links[j].source += l;
+				obj.links[j].target += l;
+			}
+			//ajouter le tout au tableau jsonDraw
+			var c = 0;
+			var len = jsonDraw.links.length;
+			for (var j=len; j<obj.links.length+len; j++) { 
+				jsonDraw.links[j] = obj.links[c];
+				jsonDraw2.links[j] = obj.links[c]; 				
+				c++;
+			}
+			
+			c = 0;
+			len = jsonDraw.nodes.length;
+			for (var j=len; j<obj.nodes.length+len; j++) { 
+				jsonDraw.nodes[j] = obj.nodes[c];
+				jsonDraw2.nodes[j] = obj.nodes[c];
+				c++;
+			}
+		}
+		
+		l += jsonArray[i].nodes.length;
+		i++;
+		draw(jsonDraw);
+	});
+}
+
+function oHdHpg(){
+	$.getJSON("graph1.json", function(data) {
+		// data is a JavaScript object now. Handle it as such
+		var jsonOHdHpg = data;
+		jsonArray[i] = jsonOHdHpg;
+		
+		if(jsonDraw==0){
+			jsonDraw = data;
+			jsonDraw2 = Object.create(data);
+		}else{
+			var obj = data;
+			for(var j=0; j<obj.links.length; j++){
+				obj.links[j].source += l;
+				obj.links[j].target += l;
+			}
+			console.log(obj.links.length);
+			//ajouter le tout au tableau jsonDraw
+			var c = 0;
+			var len = jsonDraw.links.length;
+			for (var j=len; j<obj.links.length+len; j++) { 
+				jsonDraw.links[j] = obj.links[c];
+				jsonDraw2.links[j] = obj.links[c];				
+				c++;
+			}
+			c = 0;
+			len = jsonDraw.nodes.length;
+			for (var j=len; j<obj.nodes.length+len; j++) { 
+				jsonDraw.nodes[j] = obj.nodes[c]; 
+				jsonDraw2.nodes[j] = obj.nodes[c];
+				c++;
+			}
+		}
+		
+		l += jsonArray[i].nodes.length;
+		i++;
+		draw(jsonDraw);
+	});
+}
+
+function draw(graph){
+
+	/*d3.json(file, function(error, graph) {
+	  if (error) throw error;*/
+	svg.selectAll(".link").remove();
+	svg.selectAll(".node").remove();
+			
+	  force
+		  .nodes(graph.nodes)
+		  .links(graph.links)
+		  .on("tick", tick)
+		  .start();
+
+	  var link = svg.selectAll(".link")
+		  .data(graph.links)
+		.enter().append("g")
+		  .attr("class", "link");
+
+	  link.append("line")
+		  .style("stroke-width", function(d) { return (d.bond * 2 - 1) * 2 + "px"; });
+
+	  link.filter(function(d) { return d.bond > 1; }).append("line")
+		  .attr("class", "separator");
+
+	  var node = svg.selectAll(".node")
+		  .data(graph.nodes)
+		.enter().append("g")
+		  .attr("class", "node")
+		  .on("click", click)
+		  .call(force.drag);
+
+	  node.append("circle")
+		  .attr("r", function(d) { return radius(d.size); })
+		  .style("fill", function(d) { return colors[d.atom]; });
+
+	  node.append("text")
+		  .attr("dy", ".35em")
+		  .attr("text-anchor", "middle")
+		  .text(function(d) { return d.atom; });
+
+	  function tick() {
+		link.selectAll("line")
+			.attr("x1", function(d) { return d.source.x; })
+			.attr("y1", function(d) { return d.source.y; })
+			.attr("x2", function(d) { return d.target.x; })
+			.attr("y2", function(d) { return d.target.y; });
+
+		node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+		
+	  }
+	  
+	  
+		
+	  
+	//});
+
+}
+
+function click(){
+		var s = document.getElementsByTagName('svg')[0];
+	    var kids = s.childNodes;
+	  
+		if(nClick==0){
+			nClick = 1;
+			elemOne = Array.prototype.indexOf.call(kids, this) - svg.selectAll("g.link")[0].length -1;
+		}else if(nClick==1){
+			elemTwo = Array.prototype.indexOf.call(kids, this) - svg.selectAll("g.link")[0].length -1;
+			/*d3.select(elemOne)
+				.style("fill", "steelblue")
+			d3.select(elemTwo)
+				.style("fill", "steelblue")*/
+			var extraLink = {"source": elemOne, "target": elemTwo,  "bond": 1};
+			jsonDraw.links[jsonDraw.links.length] = extraLink;
+			console.log(jsonDraw);
+			
+			svg.selectAll(".link").remove();
+			svg.selectAll(".node").remove();
+		    draw(jsonDraw);
+			elemOne = 0;
+			elemTwo = 0;
+			nClick=0;
+		}
+	  }
+
+</script>
