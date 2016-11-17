@@ -1,0 +1,221 @@
+/* This is a graphical editor and visualizator allowing to draw a graph then
+ * output it as a peptide in NOR format,  as well as generating a graph from
+ * NOR. This program uses D3JS (http://d3js.org/) and jQuery (https://jquery.com/).
+ *
+ * Author: Juraj Michalik, 2015
+ * License : GNU Affero General Public License 3 
+ */
+ 
+ /* Stylesheet for both editor and visualizer. 
+*/
+
+div.svg_window{
+	border:2px solid;
+	float:right;
+	margin:auto;
+	width:79%;
+	height:650px;
+}
+
+svg{
+	width:100%;
+	height:100%;
+}
+
+div.editor_left_block{
+	float: none;
+	overflow:hidden;
+	width:20%;
+}
+
+div.menuDiv{
+	height:650px;
+	overflow-x:hidden;
+	overflow-y:scroll;
+	border:2px solid;
+	/*font-size:80%;*/
+	float:none;
+	margin:auto;
+}
+
+.editor_search_field{
+	width:100%;
+	height: 18px;
+	overflow: hidden;
+	border: 2px solid;
+	border-color: black;
+	background-repeat: no-repeat;
+	background-position: right;
+}
+
+.editor_active_monomers{
+	width:100%;
+	height: 100%;
+	overflow: hidden;
+}
+
+.active_monomers_field{
+	width: 97%;
+	height: 18px;
+	overflow: hidden;
+	border:2px solid;
+	border-color: black;
+	float: left;
+}
+
+.editor_clear_monomers{
+	width: 36%;
+	height: 100%;
+	overflow: hidden;
+}
+
+div.editor_main_window{
+	width:700px;
+	height:500px;
+}
+
+#first_editor{
+	width:700px;
+	background-color: #dddddd; 
+}
+
+#second_editor{
+	width:700px;
+	background-color: #dddddd; 
+}
+
+div.editor_convertBar{
+	float:right;
+}
+
+div.editor_clear_redraw{
+	float: none;	
+}
+
+ul.editor_menuItem{
+	list-style-type: none;
+	padding-left: 0px;
+	word-wrap: break-word;
+}
+
+p.editor_menuItem{
+	margin-top: 0px;
+	margin-bottom: 0px;
+	margin-right: 0px;
+	margin-left: 0px;
+	padding-top: 3px;
+	padding-bottom: 3px;
+	background-color: #dddddd;
+	background: linear-gradient(#eeeeee, #dcdcdc);
+	font-family: "Trebuchet MS", Helvetica, sans-serif;
+	font-size:14px;
+}
+
+a.anchor_button{
+	appearance: button;
+    -moz-appearance: button;
+    -webkit-appearance: button;
+    text-decoration: none; font: menu; color: ButtonText;
+    display: inline-block; padding: 2px 8px;
+    text-align:center;
+    width:128px;
+}
+
+a.anchor_button:active{
+	/*border-color: ButtonShadow ButtonHighlight ButtonHighlight ButtonShadow;*/
+}
+
+li.editor_menuItem{
+	list-style-type: none;	
+}
+
+/*specific cases : basebackground*/
+#monomer_menu>li>p.editor_menuItem{
+	background: linear-gradient(#888888, #767676);
+}
+
+#monomer_menu>li>ul>li>p.editor_menuItem{
+	background: linear-gradient(#aaaaaa, #989898);
+}
+
+#monomer_menu>li>ul>li>ul>li>p.editor_menuItem{
+	background: linear-gradient(#cccccc, #bababa);
+}
+
+p.editor_menuItem:hover{
+	background-color: yellow;
+	background: linear-gradient(orange, yellow);
+}
+
+/*specific cases : mouseover*/
+#monomer_menu>li>p.editor_menuItem:hover{
+	background: linear-gradient(orange, yellow);
+}
+
+#monomer_menu>li>ul>li>p.editor_menuItem:hover{
+	background: linear-gradient(orange, yellow);
+}
+
+#monomer_menu>li>ul>li>ul>li>p.editor_menuItem:hover{
+	background: linear-gradient(orange, yellow);
+}
+
+p.editor_menuItemSelected{
+	margin-top: 0px;
+	margin-bottom: 0px;
+	margin-right: 0px;
+	margin-left: 0px;
+	padding-top: 3px;
+	padding-bottom: 3px;
+	background-color: #ff6666;
+	background: linear-gradient(#ff0000, #ff6666);
+	font-family: "Trebuchet MS", Helvetica, sans-serif;
+	font-size:14px;
+}
+
+/*specific cases : selected item*/
+#monomer_menu>li>p.editor_menuItemSelected{
+	background: linear-gradient(#990000, #996666);
+}
+
+#monomer_menu>li>ul>li>p.editor_menuItemSelected{
+	background: linear-gradient(#bb0000, #bb6666);
+}
+
+#monomer_menu>li>ul>li>ul>li>p.editor_menuItemSelected{
+	background: linear-gradient(#dd0000, #dd6666);
+}
+
+/*remove free space at top and ad bottom of list*/
+#monomer_menu{
+	margin-top: 0px;
+	margin-bottom: 0px;
+}
+
+text{
+	font-family: "Trebuchet MS", Helvetica, sans-serif;
+}
+
+/*style on window that opens after click on editor*/
+h1.image_window_msg{
+	font-family: "Trebuchet MS", Helvetica, sans-serif;
+	font-size:15px;
+}
+
+/*warning message if svg is not supported*/
+div.svg_warning_message{
+	width: 500px;
+	height: 115px;
+	border: 2px solid;
+	text-align: center;
+}
+
+.svg_warning_message>p{
+	padding-left: 8px;
+	padding-right: 8px;
+	padding-top: 8px;
+	font-family: "Trebuchet MS", Helvetica, sans-serif;
+	font-size: 14px;
+	color: red;
+	text-align: inherit;
+}
