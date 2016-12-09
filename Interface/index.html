@@ -42,9 +42,7 @@
 <script src="NORditor_main_editor.js"></script>
 </head>
 
-<body>		
-<button type="button" style="position: relative; width: 10%" onclick="aad()">Aad</button>
-<button type="button" style="position: relative; width: 10%" onclick="oHdHpg()">OH-dHpg</button>
+<body>
 <button type="button" style="position: relative; width: 10%" onclick="clearSvg()">Clear</button>
 <button type="button" style="position: relative; width: 10%" onclick="back()">Back</button>
 <div class="svg_window"></div>
@@ -83,11 +81,19 @@ $(document).on('click', 'span.color_marker' ,function(event) {
 });
 
 $(document).on('click', '#Aad' ,function(event) {
-	aad();
+	preDraw("NC(CCCC(=O)O)C(=O)O", "#D33E3E");
+});
+
+$(document).on('click', '#Ahad' ,function(event) {
+    preDraw("NC(CC(O)CC(=O)O)C(=O)O", "#02ffff");
 });
 
 $(document).on('click', '#OH-dHpg' ,function(event) {
-	oHdHpg();
+    preDraw("ONC(C(=O)O)=C1C=CC(=O)C=C1", "#4771A1");
+});
+
+$(document).on('click', '#OH-Asn' ,function(event) {
+    preDraw("NC(=O)C(O)C(N)C(=O)O", "#057701");
 });
 
 function getStyle(oElm, strCssRule){
@@ -132,6 +138,7 @@ var force = d3.layout.force()
     .charge(-400)
     .linkDistance(function(d) { return radius(d.source.size) + radius(d.target.size) + 20; });
 
+var data;
 var jsonArray = [];
 var jsonDraw = 0;
 var jsonDraw2 = 0;
@@ -143,11 +150,130 @@ var elemTwo = 0;
 var elemOneClass = "";
 var elemTwoClass = "";
 
-function aad(){
-	$.getJSON("graph.json", function(data) {
-		// data is a JavaScript object now. Handle it as such
-		var jsonAad = data;
-		jsonArray[i] = jsonAad;
+function algo(smile, color){
+    var nodesIndexes = [];
+    var nodesIndexesCpt = 0;
+    var nodes = [];
+    var indexNodes = 0;
+    var links = [];
+    var indexLinks = 0;
+    var type = "begin";
+    var list = ['=','(',')','1'];
+    var saved = [];
+    var savedIndex = 0;
+    var boucle = -1;
+    var boucleIndex = 0;
+
+    for(var i=0; i<smile.length; i++) {
+        if(list.indexOf(smile.charAt(i))==-1){
+            nodesIndexes[nodesIndexesCpt] = i;
+            nodesIndexesCpt++;
+		}
+    }
+
+	for(var i=0; i<smile.length; i++){
+		if(list.indexOf(smile.charAt(i))==-1 && type=="begin"){
+            nodes[indexNodes] = {"atom": smile.charAt(i), "size": 2, "color": color};
+            indexNodes++;
+            type = "simple";
+		}else if(list.indexOf(smile.charAt(i))==-1 && type=="simple") {
+            nodes[indexNodes] = {"atom": smile.charAt(i), "size": 2, "color": color};
+            var src = nodesIndexes.indexOf(i-1);
+            var tgt = nodesIndexes.indexOf(i);
+            links[indexLinks] = {"source": src, "target": tgt, "bond": 1, "id": 0};
+            indexNodes++;
+            indexLinks++;
+        }else if(list.indexOf(smile.charAt(i))==-1 && type=="double") {
+            if (list.indexOf(smile.charAt(i-2)) != -1) {
+                nodes[indexNodes] = {"atom": smile.charAt(i), "size": 2, "color": color};
+                var src = nodesIndexes.indexOf(i-3);
+                var tgt = nodesIndexes.indexOf(i);
+                links[indexLinks] = {"source": src, "target": tgt, "bond": 2, "id": 0};
+            } else {
+                nodes[indexNodes] = {"atom": smile.charAt(i), "size": 2, "color": color};
+                var src = nodesIndexes.indexOf(i-2);
+                var tgt = nodesIndexes.indexOf(i);
+                links[indexLinks] = {"source": src, "target": tgt, "bond": 2, "id": 0};
+            }
+            indexNodes++;
+            indexLinks++;
+            type = "simple";
+        }else if(list.indexOf(smile.charAt(i))==-1 && type=="cross"){
+			var cross = saved[savedIndex-1];
+            nodes[indexNodes] = {"atom": smile.charAt(i), "size": 2, "color": color};
+            var src = nodesIndexes.indexOf(cross);
+            var tgt = nodesIndexes.indexOf(i);
+            links[indexLinks] = {"source": src, "target": tgt, "bond": 1, "id": 0};
+            indexNodes++;
+            indexLinks++;
+            saved.splice(savedIndex-1, 1);
+            savedIndex--;
+            type = "simple";
+		}else if(list.indexOf(smile.charAt(i))==-1 && type=="doubleCross"){
+            var cross = saved[savedIndex-1];
+            nodes[indexNodes] = {"atom": smile.charAt(i), "size": 2, "color": color};
+            var src = nodesIndexes.indexOf(cross);
+            var tgt = nodesIndexes.indexOf(i);
+            links[indexLinks] = {"source": src, "target": tgt, "bond": 2, "id": 0};
+            indexNodes++;
+            indexLinks++;
+            saved.splice(savedIndex-1, 1);
+            savedIndex--;
+            type = "simple";
+        }else if(list.indexOf(smile.charAt(i))==-1 && type=="separate"){
+            nodes[indexNodes] = {"atom": smile.charAt(i), "size": 2, "color": color};
+            var src = nodesIndexes.indexOf(i-2);
+            var tgt = nodesIndexes.indexOf(i);
+            links[indexLinks] = {"source": src, "target": tgt, "bond": 1, "id": 0};
+            indexNodes++;
+            indexLinks++;
+            type = "simple";
+        }else{
+			if(smile.charAt(i)=='='){
+			    if(type=="cross"){
+                    type = "doubleCross";
+				}else {
+                    type = "double";
+                }
+			}else if(smile.charAt(i)=='('){
+				saved[savedIndex] = i-1;
+                savedIndex++;
+                type = "separate";
+			}else if(smile.charAt(i)==1) {
+			    if(boucle==-1) {
+                    boucle = i-1;
+                    boucleIndex++;
+                }else{
+                    var src = nodesIndexes.indexOf(i-1);
+                    var tgt = nodesIndexes.indexOf(boucle);
+                    links[indexLinks] = {"source": src, "target": tgt, "bond": 1, "id": 0};
+                    indexLinks++;
+                    boucle = -1;
+                    boucleIndex = 0;
+				}
+                type = "separate";
+			}else{
+				type = "cross";
+			}
+		}
+	}
+	/*console.log("nodes");
+    for(var i=0; i<nodes.length; i++){
+		console.log(JSON.stringify(nodes[i]));
+    }
+    console.log("links");
+    for(var i=0; i<links.length; i++){
+        console.log(JSON.stringify(links[i]));
+    }*/
+	data = {"nodes": nodes, "links": links};
+    //console.log(data);
+}
+
+function preDraw(smile, color){
+	//$.getJSON("graph.json", function(dta) {
+		// data is a JavaScript object now. Handle it as such*/
+		algo(smile, color);
+		jsonArray[i] = data;
 
 		jsonDraw2 = JSON.parse(JSON.stringify(jsonDraw));
 		
@@ -181,48 +307,7 @@ function aad(){
 		l += jsonArray[i].nodes.length;
 		i++;
 		draw(jsonDraw);
-	});
-}
-
-function oHdHpg(){
-	$.getJSON("graph1.json", function(data) {
-		// data is a JavaScript object now. Handle it as such
-		var jsonOHdHpg = data;
-		jsonArray[i] = jsonOHdHpg;
-		
-		jsonDraw2 = JSON.parse(JSON.stringify(jsonDraw));
-		
-		if(jsonDraw==0){
-			jsonDraw = data;
-		}else{
-			var obj = data;
-			for(var j=0; j<obj.links.length; j++){
-				obj.links[j].source += l;
-				obj.links[j].target += l;
-			}
-			for(var j=0; j<obj.nodes.length; j++){
-				obj.nodes[j].id = i;
-			}
-			console.log(obj.links.length);
-			//ajouter le tout au tableau jsonDraw
-			var c = 0;
-			var len = jsonDraw.links.length;
-			for (var j=len; j<obj.links.length+len; j++) { 
-				jsonDraw.links[j] = obj.links[c];				
-				c++;
-			}
-			c = 0;
-			len = jsonDraw.nodes.length;
-			for (var j=len; j<obj.nodes.length+len; j++) { 
-				jsonDraw.nodes[j] = obj.nodes[c]; 
-				c++;
-			}
-		}
-				
-		l += jsonArray[i].nodes.length;
-		i++;
-		draw(jsonDraw);
-	});
+	//});
 }
 
 function clearSvg(){
