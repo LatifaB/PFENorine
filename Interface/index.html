@@ -85,13 +85,13 @@ Lien Atomes    :
 $('#jstree_div').jstree({
     'core' : {
         'data' : {
-           // "url" : "http://bioinfo.lifl.fr/norine/rest/monomers/jsontree",
+            //"url" : "http://bioinfo.lifl.fr/norine/rest/monomers/jsontree",
 
             "url" : "infos.json",
-            "dataType" : "json"
+            "dataType" : "json",
         }
     },
-	"plugins" : [ "search" ]
+	"plugins" : [ "search", "wholerow"]
 });
 
 // Ici on gére l'evenement sur clique d'un element du jstree
