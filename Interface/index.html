@@ -81,17 +81,27 @@ Lien Atomes    :
 <button id="doubleAtome" type="button" style="position: relative;" onclick="link(this.id)">=</button>
 <script>
 
+
 // Ici on construit le jstree en passant en url le norine du prof */
 $('#jstree_div').jstree({
     'core' : {
-        'data' : {
+        //'data' : reponse,
+
+            'data' : {
             //"url" : "http://bioinfo.lifl.fr/norine/rest/monomers/jsontree",
 
             "url" : "infos.json",
             "dataType" : "json",
         }
     },
-	"plugins" : [ "search", "wholerow"]
+
+    'types': {
+            'default' : {
+                'icon': 'glyphicon glyphicon-leaf',
+            }
+
+    },
+	"plugins" : [ "search", "wholerow", "types"]
 });
 
 // Ici on gére l'evenement sur clique d'un element du jstree
