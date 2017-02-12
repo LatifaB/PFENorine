@@ -11,6 +11,11 @@
   stroke-width: 2px;
 }
 
+button.active {
+    background: #949494;
+    color: #fff;
+}
+
 [class^="node"] circle {
   stroke: #000;
   stroke-width: 1.5px;
@@ -25,34 +30,17 @@
 
 <head>
 <link rel="stylesheet" type="text/css" media="all" href="editor.css">
-<script src="d3.min.js"></script>
+<link rel="stylesheet" href="./vakata-jstree-9770c67/dist/themes/default/style.min.css" />
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.1/jquery.min.js"></script>
-<script type="text/javascript" src="http://gabelerner.github.io/canvg/rgbcolor.js"></script>
-<script type="text/javascript" src="http://gabelerner.github.io/canvg/canvg.js"></script>
-<script src="datas.js"></script>
-<script src="NORditor_menu.js"></script>
-<script src="NORditor_supfunc_all.js"></script>
-<script src="NORditor_supfunc_editor.js"></script>
-<script src="NORditor_move.js"></script>
-<script src="NORditor_create_base.js"></script>
-<script src="NORditor_create_actions.js"></script>
-<script src="NORditor_edgefunc.js"></script>
-<script src="NORditor_import.js"></script>
-<script src="NORditor_layout_specific.js"></script>
-<script src="NORditor_main_editor.js"></script>
-
-<link rel="stylesheet" href="./vakata-jstree-9770c67/dist/themes/default/style.min.css" />
+<script src="d3.min.js"></script>
 <script src="./vakata-jstree-9770c67/dist/jstree.min.js"></script>
 </head>
 
-<br>
-
 <!-- Dans cette partie, création des différents boutons de notre interface -->
-
 <div class="svg_window"></div>
+<input type="text" id="search_div" value="" class="input" style="width:19%; margin:0em auto 1em auto; position: relative; padding:4px; border-radius:4px; border:1px solid silver;">
 <div menu style="height: 500px; overflow: scroll; position: relative; width: 20%">
-    <input type="text" id="search_div" value="" class="input" style="width:95%; margin:0em auto 1em auto; display:block; padding:4px; border-radius:4px; border:1px solid silver;">
     <div id="jstree_div"></div>
 </div>
 Select :
@@ -64,7 +52,7 @@ Clear :
 <button id="deleteNode" type="button" style="position: relative;" onclick="link(this.id)">Node</button>
 <button id="deleteLink" type="button" style="position: relative;" onclick="link(this.id)">Link</button>
 </br>
-<button id="C" type="button" style="position: relative;" onclick="preDraw('C', '#FFFFFF')">C</button>
+<button id="C" type="button" style="position: relative;" onclick="preDraw('C', '#D3D3D3')">C</button>
 <button id="O" type="button" style="position: relative;" onclick="preDraw('O', '#FF0000')">O</button>
 <button id="N" type="button" style="position: relative;" onclick="preDraw('N', '#0000FF')">N</button>
 <button id="S" type="button" style="position: relative;" onclick="preDraw('S', '#FFFF00')">S</button>
@@ -79,49 +67,50 @@ Lien Monomeres :
 Lien Atomes    :
 <button id="simpleAtome" type="button" style="position: relative;" onclick="link(this.id)">-</button>
 <button id="doubleAtome" type="button" style="position: relative;" onclick="link(this.id)">=</button>
+
 <script>
 
+var data;
+var jsonArray = [];
+var jsonDraw = 0;
+var i = 0;
+var l = 0;
+var nClick = 0;
+var elemOne = 0;
+var elemTwo = 0;
+var elemOneClass = "";
+var elemTwoClass = "";
+var typeOfLink = "";
 
-// Ici on construit le jstree en passant en url le norine du prof */
+// Ici on construit le jstree en passant l'url du json*/
 $('#jstree_div').jstree({
     'core' : {
-        //'data' : reponse,
-
             'data' : {
             //"url" : "http://bioinfo.lifl.fr/norine/rest/monomers/jsontree",
-
             "url" : "infos.json",
             "dataType" : "json",
         }
     },
-
     'types': {
             'default' : {
                 'icon': 'glyphicon glyphicon-leaf',
             }
-
     },
 	"plugins" : [ "search", "wholerow", "types"]
 });
 
 // Ici on gére l'evenement sur clique d'un element du jstree
-$('#jstree_div')
-// listen for event
-    .on('changed.jstree', function (e, data) {
-        var i, j, r = [];
-        for(i = 0, j = data.selected.length; i < j; i++) {
-            console.log(data.instance.get_node(data.selected[i]).original.smiles);
-            var smile = data.instance.get_node(data.selected[i]).original.smiles;
-            console.log(smile);
-            //if(smile=!null) {
-                // preDraw la méthode qui va gerer le dessin des monomeres
-                preDraw(smile, data.instance.get_node(data.selected[i]).original.color);
-           // }
-        }
-    })
+$('#jstree_div').on('changed.jstree', function (e, data) {
+    var i, j, r = [];
+    for(i = 0, j = data.selected.length; i < j; i++) {
+        console.log(data.instance.get_node(data.selected[i]).original.smiles);
+        var smile = data.instance.get_node(data.selected[i]).original.smiles;
+        preDraw(smile, data.instance.get_node(data.selected[i]).original.color);
+    }
+})
+
 
 var to = false;
-
 // Ici la fonction search du jstree
 $('#search_div').keyup(function () {
 	if(to) { clearTimeout(to); }
@@ -133,14 +122,9 @@ $('#search_div').keyup(function () {
 
 
 // Ici gestion de l'editeur de monomere (la partie dessin)
-  
-var width = 960,
-    height = 500;
+var width = 960, height = 500;
 
 var color = d3.scale.category20();
-
-//var colors = {'C':'#ffffff' , 'N':'#4771A1' , 'O':'#D33E3E'} ;
-var colors = ['#ffffff' , '#4771A1' , '#D33E3E'] ;
 
 var radius = d3.scale.sqrt()
     .range([0, 6]);
@@ -153,30 +137,19 @@ var svg = d3.select("body").select("div.svg_window").append("svg")
 svg.append("rect")
     .attr("width", "100%")
     .attr("height", "100%")
-	.attr("fill", "#ffffff");
-    //.attr("fill", "#CCCCCC");
+	.attr("fill", "#ffffff")
+    .call(d3.behavior.zoom().scaleExtent([0, 8]).on("zoom", zoom));
 
+function zoom() {
+    svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+}
 
 var force = d3.layout.force()
     .size([width, height])
     .charge(-200)
     .linkDistance(function(d) { return radius(d.source.size) + radius(d.target.size) + 20; });
 
-var data;
-var jsonArray = [];
-var jsonDraw = 0;
-var jsonDraw2 = 0;
-var i = 0;
-var l = 0;
-var nClick = 0;
-var elemOne = 0;
-var elemTwo = 0;
-var elemOneClass = "";
-var elemTwoClass = "";
-var typeOfLink = "";
-var typeBond = 1;
-var currentTypeOfLink = "";
-
+//Cette fonction retourne la taille des atomes. Certains sont plus grands que d'autres
 function sizeAtome(atome){
     switch(atome) {
         case "C":
@@ -205,7 +178,13 @@ function sizeAtome(atome){
     }
 }
 
-// Algorithme de parcours de smile
+/**
+ * Algorithme de parcours de SMILE. Prend la chaine de SMILE en entrée ainsi que sa couleur et retourne en sortie un
+ * objet de type {"nodes": nodes, "links": links} qui va contenir un tableau de nodes (tous les atomes du monmère) et
+ * un tableau de links (tous les liens dans le monmère)
+ * @param smile
+ * @param color
+ */
 function algo(smile, color){
     var nodesIndexes = [];
     var nodesIndexesCpt = 0;
@@ -214,14 +193,18 @@ function algo(smile, color){
     var links = [];
     var indexLinks = 0;
     var type = "begin";
-    var list = ['=','(',')','1'];
+    var list = ['=','(',')','1','2','3','4','5','6','7','8','9'];
     var saved = [];
     var savedIndex = 0;
     var boucle = -1;
     var boucleIndex = 0;
     var cFound = false;
     var cFirst = false;
+    var doubleSeparate = false;
     var typeLink = 1;
+    var savedBoucle = [];
+    var savedIndexBoucle = 0;
+    var currentIndexBoucle = 0;
 
     for(var i=0; i<smile.length; i++) {
         if(list.indexOf(smile.charAt(i))==-1){
@@ -244,9 +227,12 @@ function algo(smile, color){
 				if(nodes[indexNodes-1].atom=="B"){
 					nodes[indexNodes-1]={"atom": "Br", "size": sizeAtome("Br"), "color": color};
 				}
-			}else if(smile.charAt(i)==="c"){
+			}else if(smile.charAt(i)=="c"){
                 nodes[indexNodes] = {"atom": "C", "size": sizeAtome("C"), "color": color};
                 var src = nodesIndexes.indexOf(i-1);
+                if(smile.charAt(i-1)>=1 && smile.charAt(i-1)<=9){
+                    src = nodesIndexes.indexOf(i-2);
+                }
                 var tgt = nodesIndexes.indexOf(i);
                 if(cFirst){
                     links[indexLinks] = {"source": src, "target": tgt, "bond": 1};
@@ -260,6 +246,9 @@ function algo(smile, color){
             } else{
 				nodes[indexNodes] = {"atom": smile.charAt(i), "size": sizeAtome(smile.charAt(i)), "color": color};
 				var src = nodesIndexes.indexOf(i-1);
+				if(smile.charAt(i-1)>=1 && smile.charAt(i-1)<=9){
+                    src = nodesIndexes.indexOf(i-2);
+                }
 				var tgt = nodesIndexes.indexOf(i);
 				links[indexLinks] = {"source": src, "target": tgt, "bond": 1};
 				indexNodes++;
@@ -267,7 +256,7 @@ function algo(smile, color){
 			}
         }else if(list.indexOf(smile.charAt(i))==-1 && type=="double") {
             if (list.indexOf(smile.charAt(i-2)) != -1) {
-                if(smile.charAt(i)==="c"){
+                if(smile.charAt(i)=="c"){
                     nodes[indexNodes] = {"atom": "C", "size": sizeAtome("C"), "color": color};
                     var src = nodesIndexes.indexOf(i - 3);
                     var tgt = nodesIndexes.indexOf(i);
@@ -279,7 +268,7 @@ function algo(smile, color){
                     links[indexLinks] = {"source": src, "target": tgt, "bond": 2};
                 }
             } else {
-                if(smile.charAt(i)==="c"){
+                if(smile.charAt(i)=="c"){
                     nodes[indexNodes] = {"atom": "C", "size": sizeAtome("C"), "color": color};
                     var src = nodesIndexes.indexOf(i - 2);
                     var tgt = nodesIndexes.indexOf(i);
@@ -317,6 +306,9 @@ function algo(smile, color){
             indexLinks++;
             saved.splice(savedIndex-1, 1);
             savedIndex--;
+            if(doubleSeparate){
+                doubleSeparate=false;
+            }
             type = "simple";
 		}else if(list.indexOf(smile.charAt(i))==-1 && type=="doubleCross"){
             var cross = saved[savedIndex-1];
@@ -342,10 +334,10 @@ function algo(smile, color){
             saved.splice(savedIndex-1, 1);
             savedIndex--;
             type = "simple";
-        }else if(list.indexOf(smile.charAt(i))==-1 && type=="separate"){
+        }else if(list.indexOf(smile.charAt(i))==-1 && (type=="separate" || type=="doubleSeparate")){
             if(smile.charAt(i)==="c"){
                 nodes[indexNodes] = {"atom": "C", "size": sizeAtome("C"), "color": color};
-                var src = nodesIndexes.indexOf(i - 2);
+                var src = nodesIndexes.indexOf(saved[savedIndex-1]);
                 var tgt = nodesIndexes.indexOf(i);
                 if(cFirst){
                     links[indexLinks] = {"source": src, "target": tgt, "bond": 1};
@@ -356,9 +348,16 @@ function algo(smile, color){
                 }
             } else {
                 nodes[indexNodes] = {"atom": smile.charAt(i), "size": sizeAtome(smile.charAt(i)), "color": color};
-                var src = nodesIndexes.indexOf(i - 2);
+                var src = nodesIndexes.indexOf(saved[savedIndex-1]);
                 var tgt = nodesIndexes.indexOf(i);
-                links[indexLinks] = {"source": src, "target": tgt, "bond": 1};
+                if(type=="separate"){
+                    links[indexLinks] = {"source": src, "target": tgt, "bond": 1};
+                }else{
+                    links[indexLinks] = {"source": src, "target": tgt, "bond": 2};
+                }
+            }
+            if(doubleSeparate){
+                doubleSeparate=false;
             }
             indexNodes++;
             indexLinks++;
@@ -367,15 +366,30 @@ function algo(smile, color){
 			if(smile.charAt(i)=='='){
 			    if(type=="cross"){
                     type = "doubleCross";
-				}else {
+				}else if(type=="separate"){
+                    type = "doubleSeparate";
+                }else{
                     type = "double";
                 }
 			}else if(smile.charAt(i)=='('){
-				saved[savedIndex] = i-1;
-                savedIndex++;
+			    if(doubleSeparate){
+                    //on ne fait rien
+                }else{
+			        if(smile.charAt(i-1)>=1 && smile.charAt(i-1)<=9){
+                        for(var c=i; c>=0; c--){
+                            if(list.indexOf(smile.charAt(c))==-1){
+                                saved[savedIndex] = c;
+                                break;
+                            }
+                        }
+                    }else{
+                        saved[savedIndex] = i-1;
+                    }
+                    savedIndex++;
+                }
                 type = "separate";
-			}else if(smile.charAt(i)==1) {
-			    if(boucle==-1) {
+			}else if(smile.charAt(i)>=1 && smile.charAt(i)<=9) {
+			    /*if(boucle==-1) {
                     boucle = i-1;
                     boucleIndex++;
                     if(smile.charAt(i-1)=="c"){
@@ -395,30 +409,58 @@ function algo(smile, color){
                     indexLinks++;
                     boucle = -1;
                     boucleIndex = 0;
-				}
-                type = "separate";
+				}*/
+                if(smile.charAt(i)>savedIndexBoucle){
+                    for(var c=i-1; c>=0; c--){
+                        if(list.indexOf(smile.charAt(c))==-1){
+                            savedBoucle[savedIndexBoucle] = c;
+                            savedIndexBoucle++;
+                            break;
+                        }
+                    }
+                    if(smile.charAt(i-1)=="c"){
+                        cFound=true;
+                        cFirst=true;
+                    }
+                }else{
+                    var c=i-1;
+                    var src =-1;
+                    for(c; c>=0; c--){
+                        if(list.indexOf(smile.charAt(c))==-1){
+                            src = nodesIndexes.indexOf(c);
+                            break;
+                        }
+                    }
+                    var tgt = nodesIndexes.indexOf(savedBoucle[currentIndexBoucle]);
+                    if(cFound){
+                        links[indexLinks] = {"source": src, "target": tgt, "bond": typeLink};
+                        typeLink = (typeLink==1) ? 2 : 1;
+                        cFound = false;
+                    }else{
+                        links[indexLinks] = {"source": src, "target": tgt, "bond": 1};
+                    }
+                    indexLinks++;
+                    //savedBoucle.splice(savedIndexBoucle-1, 1);
+                    //savedIndexBoucle--;
+                    currentIndexBoucle++;
+                }
 			}else{
-				type = "cross";
+                if(smile.charAt(i+1)=='('){
+                    //on enregistre pas
+                    doubleSeparate = true;
+                }else{
+                    type = "cross";
+                }
 			}
 		}
 	}
-	/*console.log("nodes");
-    for(var i=0; i<nodes.length; i++){
-		console.log(JSON.stringify(nodes[i]));
-    }
-    console.log("links");
-    for(var i=0; i<links.length; i++){
-        console.log(JSON.stringify(links[i]));
-    }*/
 	data = {"nodes": nodes, "links": links};
-    //console.log(data);
+    console.log(data);
 }
 
 /* Fonction qui va regrouper les différentes informations (link, bond) du monomere en un seul tableau puis
    appeler la fonction qui va dessiner le monomere */
 function preDraw(smile, color){
-	//$.getJSON("graph.json", function(dta) {
-		// data is a JavaScript object now. Handle it as such*/
 		algo(""+smile, color);
 
 		jsonArray[i] = data;
@@ -463,7 +505,6 @@ function preDraw(smile, color){
 		l += jsonArray[i].nodes.length;
 		i++;
 		draw(jsonDraw);
-	//});
 }
 
 // Fonction du bouton clear, qui va supprimer tout le contenu du SVG
@@ -483,20 +524,11 @@ function clearSvg(){
 	
 }
 
-// Fonction du bouton back, pour revenir en arriere
-function back(){
-	if(jsonDraw2==0){
-		clearSvg();
-	}else{
-		draw(jsonDraw2);
-	}
-}
-
-// Fonction qui va dessiner les monomeres
+/**
+ * Fonction qui va dessiner les monomeres à partir d'un objet (graph) contenant un tableau de nodes et un tableau de links
+ * @param graph
+ */
 function draw(graph){
-
-	/*d3.json(file, function(error, graph) {
-	  if (error) throw error;*/
 	svg.selectAll('.link').remove();
 	svg.selectAll('*[class^="node"]').remove();
 			
@@ -547,7 +579,8 @@ function draw(graph){
 
 	  node.append("circle")
 		  .attr("r", function(d) { return radius(d.size); })
-		  .style("fill", function(d, i) { return d.color; });
+		  .style("fill", function(d, i) { return d.color; })
+          .style("stroke", function(d, i) { return d.color; });
 
 	  node.append("text")
 		  .attr("dy", ".35em")
@@ -564,18 +597,20 @@ function draw(graph){
 		node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
 		
 	  }
-	  
-	  
-		
-	  
-	//});
-
 }
 
+/**
+ * Cette fonction enregistre le type de bouton cliqué
+ * @param clicked_id
+ */
 function link(clicked_id) {
     typeOfLink = clicked_id.toString();
 }
 
+/**
+ * Cette fonction retourne la valeur du lien en fonction du bouton selectionné
+ * @returns {number}
+ */
 function getBond(){
     switch(typeOfLink.toString()) {
         case "simpleMonomere":
@@ -593,6 +628,10 @@ function getBond(){
     }
 }
 
+/**
+ * Cette fonction retourne le type du lien, si c'est un lien entre atomes ou un lien entre mmonomeres
+ * @returns {*}
+ */
 function getType(){
     switch(typeOfLink.toString()) {
         case "simpleMonomere":
@@ -610,6 +649,9 @@ function getType(){
     }
 }
 
+/**
+ * Cette methode va faire appel au type de suppression suivant le bouton selectionné
+ */
 function doAction(){
     switch(typeOfLink) {
         case "select":
@@ -629,6 +671,10 @@ function doAction(){
     }
 }
 
+/**
+ * Cette methode supprime un monomère complet
+ * @param el
+ */
 function deleteMonomere(el){
     if(typeOfLink!="deleteMonomere"){
         return;
@@ -652,12 +698,13 @@ function deleteMonomere(el){
             l--;
         }
     }
-
-    //svg.selectAll("#link"+elemClass.split("node")[1]).remove();
-    //svg.selectAll("g."+elemClass).remove();
     draw(jsonDraw);
 }
 
+/**
+ * Cette methode supprime un atome dans le monomère
+ * @param el
+ */
 function deleteNode(el){
     if(typeOfLink!="deleteNode"){
         return;
@@ -677,11 +724,13 @@ function deleteNode(el){
             cpt--;
         }
     }
-
     draw(jsonDraw);
-
 }
 
+/**
+ * Cette methode supprime un lien dans le monomère
+ * @param el
+ */
 function deleteLink(el){
     if(typeOfLink!="deleteLink"){
         return;
@@ -700,39 +749,47 @@ function deleteLink(el){
 }
 
 
-
-// Fonction qui va gerer les doubles cliques sur les monomeres pour créer des liens
+/**
+ * Cette methode va créer un lien entre deux atomes ou deux monomères
+ * @param el
+ */
 function addLink(el){
-		var s = document.getElementsByTagName('svg')[0];
-	    var kids = s.childNodes;
+    var s = document.getElementsByTagName('svg')[0];
+    var kids = s.childNodes;
 	  
-		if(nClick==0){
-			nClick = 1;
-			elemOne = Array.prototype.indexOf.call(kids, el) - svg.selectAll("g.link")[0].length -1;
-			elemOneClass = el.classList[0];
+    if(nClick==0){
+        nClick = 1;
+        elemOne = Array.prototype.indexOf.call(kids, el) - svg.selectAll("g.link")[0].length -1;
+        elemOneClass = el.classList[0];
 
-		}else if(nClick==1 /*&& ctrlKeyPressed*/){
-			elemTwo = Array.prototype.indexOf.call(kids, el) - svg.selectAll("g.link")[0].length -1;
-			elemTwoClass = el.classList[0];
-			/*d3.select(elemOne)
-				.style("fill", "steelblue")
-			d3.select(elemTwo)
-				.style("fill", "steelblue")*/
-			console.log(elemOneClass);
-			if(elemOneClass != elemTwoClass){
-				var extraLink = {"source": elemOne, "target": elemTwo,  "bond": getBond(), "type": getType(), "id1": parseInt(elemOneClass.split("node")[1]), "id2": parseInt(elemTwoClass.split("node")[1])};
-				jsonDraw.links[jsonDraw.links.length] = extraLink;
-				console.log(jsonDraw);
-				
-				//svg.selectAll("link").remove();
-				//svg.selectAll('*[class^="node"]').remove();
-				draw(jsonDraw);
-			}			
-			elemOne = 0;
-			elemTwo = 0;
-			nClick=0;
-		}
-	  }
+    }else if(nClick==1 /*&& ctrlKeyPressed*/){
+        elemTwo = Array.prototype.indexOf.call(kids, el) - svg.selectAll("g.link")[0].length -1;
+        elemTwoClass = el.classList[0];
+        if(elemOneClass != elemTwoClass){
+            var extraLink = {"source": elemOne, "target": elemTwo,  "bond": getBond(), "type": getType(), "id1": parseInt(elemOneClass.split("node")[1]), "id2": parseInt(elemTwoClass.split("node")[1])};
+            jsonDraw.links[jsonDraw.links.length] = extraLink;
+            draw(jsonDraw);
+        }
+        elemOne = 0;
+        elemTwo = 0;
+        nClick=0;
+    }
+}
 
+/**
+ * Cette fonction garde le focus sur un bouton s'il a été cliqué
+ */
+$('button').click(function(){
+    console.log($(this));
+    var buttons = document.getElementsByTagName('button');
+    for (var i = 0; i < buttons.length; i++) {
+        var button = buttons[i];
+        button.className = "";
+    }
+    if($(this).hasClass('active')){
+    } else {
+        $(this).addClass('active')
+    }
+});
 </script>
 </body>
